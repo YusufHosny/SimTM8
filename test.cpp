@@ -39,10 +39,29 @@ int main() {
     test(bit_get(test_byte, 4) == 0);
 
     // Address and Word structs
+    Word word = 0xADAD;
+    test(word == 0xADAD);
+    word.h = 0xAB;
+    word.l = 0xCD;
+    test(word == 0xABCD);
+    word = 0xDEAD;
+    test(word == 0xDEAD);
+    
 
+    Address address = 0xDEADAF;
+    test(address == 0xDEADAF);
+    address.e = 0xAB;
+    address.h = 0xCD;
+    address.l = 0xEF;
+    test(address == 0xABCDEF);
+    address = 0xFEDCBA;
+    test(address == 0xFEDCBA);
+    address = 0;
+    test(address == 0);
+    address += 3;
+    test(address == 3);
 
-    // Condition code registers
-
+    // Condition code registers    
 
     // NOP and stm8 start
 

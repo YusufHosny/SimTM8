@@ -21,12 +21,12 @@ struct Word {
 
     // int conversion
     operator int() const {
-        return (h << 8) + l;
+        return ((int)h << 8) + l;
     }
 
     int operator=(int word) {
         h = word >> 8;
-        l = word - h;
+        l = word % 0x100;
         return word;
     }
 
@@ -49,14 +49,14 @@ struct Address {
     // int conversion
     int operator=(int extended) {
         e = extended / (1 << 16);
-        h = (extended - l) / (1 << 8);
-        l = extended - l - h;
+        h = (extended % 0x10000) / (1 << 8);
+        l = extended % 0x100;
 
         return extended;
     }
 
     operator int() const {
-        return (e << 16) + (h << 8) + l;
+        return ((int)e << 16) + ((int)h << 8) + l;
     }
 
 

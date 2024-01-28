@@ -86,7 +86,7 @@ class stm8s105k4Memory {
 // TODO timers
 
 
-class STM8105k4 {
+class stm8s105k4 {
     public:
 
         void next_cycle() {
