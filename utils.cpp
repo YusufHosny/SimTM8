@@ -1,4 +1,5 @@
 #include "utils.h"
+#include <stdexcept>
 
 void bit_set(byte *target, byte index, byte value) {
     if(value == 1) {

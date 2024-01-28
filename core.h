@@ -5,8 +5,49 @@
 class stm8s105k4;
 class stm8s105k4Memory;
 
+struct ConditionCode { // Condition code register
+    byte V;
+    byte O;
+    byte I1;
+    byte H;
+    byte I0;
+    byte N;
+    byte Z;
+    byte C;
+
+    byte operator=(byte byte) {
+        V = bit_get(byte, 7);
+        O = bit_get(byte, 6);
+        I1 = bit_get(byte, 5);
+        H = bit_get(byte, 4);
+        I0 = bit_get(byte, 3);
+        N = bit_get(byte, 2);
+        Z = bit_get(byte, 1);
+        C = bit_get(byte, 0);
+
+        return byte;
+    }
+
+    int operator=(int byte) {
+        V = bit_get(byte, 7);
+        O = bit_get(byte, 6);
+        I1 = bit_get(byte, 5);
+        H = bit_get(byte, 4);
+        I0 = bit_get(byte, 3);
+        N = bit_get(byte, 2);
+        Z = bit_get(byte, 1);
+        C = bit_get(byte, 0);
+
+        return byte;
+    }
+
+    operator byte() const {
+        return (V << 7) + (O << 6) + (I1 << 5) + (H << 4) + (I0 << 3) + (N << 2) + (Z << 1) + C;
+    }
+}; 
+
 // pre-bytes
-#define NOPRE 0xFF // Placeholder pre-byte for operations without a pre-byte
+#define NOPRE 0x00 // Placeholder pre-byte for operations without a pre-byte
  
 #define PDY 0x90   // Replaces an X based instruction using immediate, direct, indexed or
                    // inherent addressing mode by a Y one.
@@ -32,17 +73,6 @@ class stm8s105k4Memory;
 
 // Instructions
 
-
-
-// Define condition code bit indices
-#define V 7
-#define O 6
-#define I1 5
-#define H 4
-#define I0 3
-#define N 2
-#define Z 1
-#define C 0
 
 // TODO
 #define OPT0

@@ -9,7 +9,15 @@ struct Word {
     byte h;
     byte l;
 
-    // cast to int
+    // Constructors
+    Word() : Word(0) { }
+
+    Word(int word) {
+        *this = word;   
+    }
+
+
+    // int conversion
     operator int() const {
         return (h << 8) + l;
     }
@@ -18,6 +26,14 @@ struct Word {
         h = word >> 8;
         l = word - h;
     }
+
+    // Address conversion
+    operator Address() const {
+        Address address;
+        address.h = h;
+        address.l = l;
+        return address;
+    }
 };
 
 // memory address struct
@@ -25,17 +41,35 @@ struct Address {
     byte e; // extended byte
     byte h; // high byte
     byte l; // low byte
+    
+    // Constructors
+    Address() : Address(0) { }
 
-    // define address using an int
+    Address(int address) {
+        *this = address;   
+    }
+
+    // int conversion
     int operator=(int extended) {
         e = extended / (1 << 16);
         h = (extended - l) / (1 << 8);
         l = extended - l - h;
     }
 
-    // cast to int
     operator int() const {
         return (e << 16) + (h << 8) + l;
+    }
+
+
+    // Word Conversion
+    Word operator=(Word word) {
+        e = 0;
+        h = word.h;
+        l = word.l;
+    }
+
+    int operator+=(int increment) {
+        *this = (int)(*this) + increment;
     }
 
 };
