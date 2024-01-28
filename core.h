@@ -2,6 +2,11 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include "stm8s105k4.h"
+#include "utils.h"
+#include "instructions.h"
+#include <stdexcept>
+
 class stm8s105k4;
 class stm8s105k4Memory;
 

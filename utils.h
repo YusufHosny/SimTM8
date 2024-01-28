@@ -4,6 +4,8 @@
 
 using byte = unsigned char;
 
+struct Address;
+
 // Define word and address structs
 struct Word {
     byte h;
@@ -25,15 +27,10 @@ struct Word {
     int operator=(int word) {
         h = word >> 8;
         l = word - h;
+        return word;
     }
 
-    // Address conversion
-    operator Address() const {
-        Address address;
-        address.h = h;
-        address.l = l;
-        return address;
-    }
+    operator Address() const;
 };
 
 // memory address struct
@@ -54,6 +51,8 @@ struct Address {
         e = extended / (1 << 16);
         h = (extended - l) / (1 << 8);
         l = extended - l - h;
+
+        return extended;
     }
 
     operator int() const {
@@ -66,13 +65,25 @@ struct Address {
         e = 0;
         h = word.h;
         l = word.l;
+
+        return word;
     }
 
     int operator+=(int increment) {
         *this = (int)(*this) + increment;
+        return (int)(*this);
     }
 
 };
+
+
+// word to Address conversion
+Word::operator Address() const {
+    Address address;
+    address.h = h;
+    address.l = l;
+    return address;
+}
 
 
 void bit_set(byte *target, byte index, byte value);

@@ -1,14 +1,16 @@
 #include <iostream>
-#include "utils.h"
-#include "core.h"
+#include "utils.cpp"
+#include "core.cpp"
 #include <string>
 
 using std::string;
 using std::cout;
 
 int test_index = 0;
+int success_count = 0;
 void test(bool test) {
-    cout << "Test Number " << ++test_index << ": " << (test ? "Success." : "Failed.");
+    success_count += test;
+    cout << "Test Number " << ++test_index << ": " << (test ? "Success." : "Failed.") << std::endl;
 }
 
 int main() {
@@ -37,7 +39,7 @@ int main() {
     test(bit_get(test_byte, 4) == 0);
 
     // Address and Word structs
-    
+
 
     // Condition code registers
 
@@ -46,4 +48,7 @@ int main() {
 
     // LD
 
+
+    // check if succeeded all
+    cout << "Tests Succeeded: " << success_count << " / " << test_index << "." << std::endl;
 }
