@@ -119,6 +119,15 @@ int main() {
     
     // LD
 
+    // ADD
+
+    // JRA
+
+    // MOV
+
+    // SUB
+
+    // CP
 
     // check if succeeded all
     cout << "Tests Succeeded: " << success_count << " / " << test_index << "." << std::endl;
