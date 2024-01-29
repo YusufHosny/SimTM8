@@ -51,34 +51,6 @@ struct ConditionCode { // Condition code register
     }
 }; 
 
-// pre-bytes
-#define NOPRE 0x00 // Placeholder pre-byte for operations without a pre-byte
- 
-#define PDY 0x90   // Replaces an X based instruction using immediate, direct, indexed or
-                   // inherent addressing mode by a Y one.
-                   // It also provides read/modify/write instructions using Y indexed
-                   // addressing mode with long offset and two bit handling instructions
-                   // (BCPL and BCCM)
-
-#define PIX 0x92   // Replaces an instruction using direct, direct bit, or direct relative
-                   // addressing mode to an instruction using the corresponding indirect
-                   // addressing mode.
-                   // It also changes an instruction using X indexed addressing mode to
-                   // an instruction using indirect X indexed addressing mode
-
-#define PIY 0x91   // Replace an instruction using indirect X indexed addressing mode by
-                   // a Y one.
-
-#define PWSP 0x72  // Provide long addressing mode for bit handling and read/modify/write
-                   // instructions.
-                   // It also provides indirect addressing mode with two byte pointer for
-                   // read/modify/write and register/memory instructions.
-                   // Finally it provides stack pointer indexed addressing mode on
-                   // register/memory instructions.
-
-// Instructions
-
-
 // TODO
 #define OPT0
 

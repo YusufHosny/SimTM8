@@ -13,8 +13,9 @@
 
 // Important locations
 #define STACKBASE 0x07FF             // base pointer of stack (bottom of stack)
-#define INTERRUPVECTORSTBASE 0x8000  // base pointer of interrupt vectors (top of flash memory/interrupt vectors)
-#define FLASHMEMEND 0xBFFF           // end of flash program memory range (16K flash mem size)
+#define INTERRUPVECTORSTBASE 0x8000  // base pointer of interrupt vectors (top of interrupt vector area)
+#define PROGRAM_MEM_START 0x8080     // start of progra memory
+#define PROGRAM_MEM_END 0xBFFF       // end of flash program memory range (16K flash mem size)
 
 
 // Option Bytes

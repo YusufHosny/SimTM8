@@ -88,6 +88,14 @@ class stm8s105k4Memory {
 
 class stm8s105k4 {
     public:
+        stm8s105k4Memory mem;
+        
+        // primary registers, here for ease of access instead of using pointers to memory mappings
+        Address PC; // program counter
+        Word X, Y, SP; // X, Y, Stack pointer
+        byte A; // Accumulator
+        ConditionCode CC; // Condition code register
+
 
         void next_cycle() {
             // read memory at program counter
@@ -102,7 +110,7 @@ class stm8s105k4 {
             }
         }
 
-        void reset() {
+        void device_reset() {
             // reset memory
             mem.reset();
 
@@ -113,31 +121,31 @@ class stm8s105k4 {
             SP = 0x03FF;
             CC = 0x28;
             A = 0;
-            
+
+            reset_interrupt();
         }
 
-        // TODO
-        void load_program() {
-
+        void reset_interrupt() {
 
             // set PC to reset vector
             PC.e = mem.get(IRV_RESET + 1);
             PC.h = mem.get(IRV_RESET + 2);
             PC.l = mem.get(IRV_RESET + 3);
+
+        }
+
+        // TODO
+        void load_program() {
+
+        
+        }
+
+        byte get_memory_byte(Address address) {
+            return mem.get(address);
         }
 
     private:
-        stm8s105k4Memory mem;
-
-        // primary registers, here for ease of access instead of using pointers to memory mappings
-        Address PC; // program counter
-        Word X, Y, SP; // X, Y, Stack pointer
-        byte A; // Accumulator
-        ConditionCode CC; // Condition code register
-        
-        
-        
-        
+                 
         void execute_instruction(byte pre_byte, byte instruction) {
             switch ((pre_byte << 16) + instruction) {
                 // NOP

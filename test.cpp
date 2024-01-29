@@ -61,10 +61,62 @@ int main() {
     address += 3;
     test(address == 3);
 
-    // Condition code registers    
+    // Condition code register
+    ConditionCode CC;
+    CC = 0b11010111;
+    test(CC == 0b11010111);
+    test(CC.V == 1);
+    test(CC.O == 1);
+    test(CC.I1 == 0);
+    test(CC.H == 1);
+    test(CC.I0 == 0);
+    test(CC.N == 1);
+    test(CC.Z == 1);
+    test(CC.C == 1);
 
-    // NOP and stm8 start
+    // reset and load stm8 memory
+    stm8s105k4 stm8;
+    stm8.mem.load_interrupt(IRV_RESET, PROGRAM_MEM_START);
+    test(stm8.mem.get(IRV_RESET) == 0x82);
+    test(stm8.mem.get(IRV_RESET + 1) == 0x00);
+    test(stm8.mem.get(IRV_RESET + 2) == 0x80);
+    test(stm8.mem.get(IRV_RESET + 3) == 0x80);
+    stm8.device_reset();
+    test(stm8.PC == 0x008080);
+    test(stm8.CC == 0x28);
+    test(stm8.A == 0);
+    test(stm8.SP = 0x3FF);
+    test(stm8.X == stm8.Y & stm8.X == 0);    
 
+    // NOP
+    stm8.mem.set(PROGRAM_MEM_START, NOP);
+    stm8.mem.set(PROGRAM_MEM_START + 1, NOP);
+    stm8.mem.set(PROGRAM_MEM_START + 2, NOP);
+    test(stm8.CC == 0x28);
+    test(stm8.A == 0);
+    test(stm8.SP = 0x3FF);
+    test(stm8.X == stm8.Y & stm8.X == 0);    
+
+    test(stm8.PC == 0x008080);
+    stm8.next_cycle();
+    test(stm8.CC == 0x28);
+    test(stm8.A == 0);
+    test(stm8.SP = 0x3FF);
+    test(stm8.X == stm8.Y & stm8.X == 0);    
+    test(stm8.PC == 0x008081);
+    stm8.next_cycle();
+    test(stm8.CC == 0x28);
+    test(stm8.A == 0);
+    test(stm8.SP = 0x3FF);
+    test(stm8.X == stm8.Y & stm8.X == 0);    
+    test(stm8.PC == 0x008082);
+    stm8.next_cycle();
+    test(stm8.CC == 0x28);
+    test(stm8.A == 0);
+    test(stm8.SP = 0x3FF);
+    test(stm8.X == stm8.Y & stm8.X == 0);    
+    test(stm8.PC == 0x008083);
+    
     // LD
 
 
