@@ -87,6 +87,12 @@ Word::operator Address() const {
 
 
 void bit_set(byte *target, byte index, byte value);
-int bit_get(byte target, byte index);
+byte bit_get(byte target, byte index);
+
+// check CC flags utility functions
+byte check_V_add(byte A, byte M, byte R);
+byte check_H_add(byte A, byte M, byte R);
+byte check_C_add(byte A, byte M, byte R);
+
 
 #endif

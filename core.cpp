@@ -55,7 +55,7 @@ class stm8s105k4Memory {
     private:
         // TODO optimize by removing reserved/unused address ranges
         byte Memory[0x010000]; // declare memory array
-
+    
         bool isReserved(Address address) {
             // if in reserved memory ranges
             // TODO: maybe use #define for these addresses
@@ -138,10 +138,6 @@ class stm8s105k4 {
         void load_program() {
 
         
-        }
-
-        byte get_memory_byte(Address address) {
-            return mem.get(address);
         }
 
     private:
@@ -528,21 +524,243 @@ class stm8s105k4 {
                 }
 
                 // ADD
-                case(ADD_IMMEDIATE): {}
-                case(ADD_shortmem): {}
-                case(ADD_longmem): {}
-                case(ADD_Xptr): {}
-                case(ADD_shortoffX): {}
-                case(ADD_longoffX): {}
-                case(ADD_Yptr): {}
-                case(ADD_shortoffY): {}
-                case(ADD_longoffY): {}
-                case(ADD_shortoffSPtr): {}
-                case(ADD_shortptr): {}
-                case(ADD_longptr): {}
-                case(ADD_shortptrX): {}
-                case(ADD_longptrX): {}
-                case(ADD_shortptrY): {}
+                case(ADD_IMMEDIATE): {
+                    byte M = mem.get(PC+1);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 2;
+                    break;
+                }
+                case(ADD_shortmem): {
+                    byte shortmem = mem.get(PC+1);
+                    byte M = mem.get(shortmem);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 2;
+                    break;
+                }
+                case(ADD_longmem): {
+                    Word longmem;
+                    longmem.h = mem.get(PC+1);
+                    longmem.l = mem.get(PC+2);
+                    byte M = mem.get(longmem);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
+                case(ADD_Xptr): {
+                    byte M = mem.get(X);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 1;
+                    break;
+                }
+                case(ADD_shortoffX): {
+                    byte shortoff = mem.get(PC+1);
+                    byte M = mem.get(X + shortoff);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 2;
+                    break;
+                }
+                case(ADD_longoffX): {
+                    Word longoff;
+                    longoff.h = mem.get(PC+1);
+                    longoff.l = mem.get(PC+2);
+                    byte M = mem.get(X + longoff);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
+                case(ADD_Yptr): {
+                    byte M = mem.get(Y);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 2;
+                    break;
+                }
+                case(ADD_shortoffY): {
+                    byte shortoff = mem.get(PC+2);
+                    byte M = mem.get(Y + shortoff);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
+                case(ADD_longoffY): {
+                    Word longoff;
+                    longoff.h = mem.get(PC+2);
+                    longoff.l = mem.get(PC+3);
+                    byte M = mem.get(Y + longoff);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 4;
+                    break;
+                }
+                case(ADD_shortoffSPtr): {
+                    byte shortoff = mem.get(PC+1);
+                    byte M = mem.get(SP + shortoff);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 2;
+                    break;
+                }
+                case(ADD_shortptr): {
+                    byte shortptr = mem.get(PC+2);
+                    Word target = mem.getWord(shortptr);
+                    byte M = mem.get(target);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
+                case(ADD_longptr): {
+                    Word longptr;
+                    longptr.h = mem.get(PC+2);
+                    longptr.l = mem.get(PC+3);
+                    Word target = mem.getWord(longptr);
+                    byte M = mem.get(target);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 4;
+                    break;
+                }
+                case(ADD_shortptrX): {
+                    byte shortptr = mem.get(PC+2);
+                    Word target = mem.getWord(X + shortptr);
+                    byte M = mem.get(target);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
+                case(ADD_longptrX): {
+                    Word longptr;
+                    longptr.h = mem.get(PC+2);
+                    longptr.l = mem.get(PC+3);
+                    Word target = mem.getWord(X + longptr);
+                    byte M = mem.get(target);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 4;
+                    break;
+                }
+                case(ADD_shortptrY): {
+                    byte shortptr = mem.get(PC+2);
+                    Word target = mem.getWord(Y + shortptr);
+                    byte M = mem.get(target);
+                    byte R = A + M; // result
+                    CC.V = check_V_add(A, M, R);
+                    CC.H = check_H_add(A, M, R);
+                    CC.N = bit_get(R, 7);
+                    CC.Z = (R == 0);
+                    CC.C = check_C_add(A, M, R);
+
+                    A = R;
+
+                    PC += 3;
+                    break;
+                }
 
                 // SUB
                 case(SUB_IMMEDIATE): {}
