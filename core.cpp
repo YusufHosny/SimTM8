@@ -12,7 +12,7 @@ class stm8s105k4 {
         ConditionCode CC; // Condition code register
 
 
-        void next_cycle() {
+        void next() {
             // read memory at program counter
             byte next_byte = mem.get(PC);
 
@@ -56,7 +56,70 @@ class stm8s105k4 {
         }
 
     private:
-                 
+
+        void ADD(byte M) {
+            byte R = A + M;
+            CC.V = check_V_add(A, M, R);
+            CC.H = check_H_add(A, M, R);
+            CC.N = bit_get(R, 7);
+            CC.Z = (R == 0);
+            CC.C = check_C_add(A, M, R);
+
+            A = R;
+        }
+
+        void SUB(byte M) {
+            byte R = A - M;
+            CC.V = check_V_sub(A, M, R);
+            CC.N = bit_get(R, 7);
+            CC.Z = (R == 0);
+            CC.C = check_C_sub(A, M, R);
+            
+            A = R;
+        }
+
+        // get byte at shortmem byte given at memory location
+        byte get_at_shortmem(byte location) {
+            byte shortmem = mem.get(location);
+            return mem.get(shortmem);
+        }
+        
+        // get byte at longmem byte given at memory location
+        byte get_at_longmem(byte location) {
+            Word longmem;
+            longmem.h = mem.get(location);
+            longmem.l = mem.get(location+1);
+            return mem.get(longmem);
+        }
+
+        // get byte at shortptr byte given at memory location
+        Word get_at_shortptr(byte location) {
+            byte shortptr = mem.get(location);
+            return mem.getWord(shortptr);
+        }
+        
+        // get byte at longptr byte given at memory location
+        Word get_at_longptr(byte location) {
+            Word longptr;
+            longptr.h = mem.get(location);
+            longptr.l = mem.get(location+1);
+            return mem.getWord(longptr);
+        }
+
+        Word get_at_REGshortptr(byte location, Word reg) {
+            byte shortptr = mem.get(location);
+            return mem.getWord(reg + shortptr);
+        }
+
+
+        Word get_at_REGlongptr(byte location, Word reg) {
+            Word longptr;
+            longptr.h = mem.get(PC+2);
+            longptr.l = mem.get(PC+3);
+            return mem.getWord(reg + longptr);
+        }   
+
+
         void execute_instruction(byte pre_byte, byte instruction) {
             switch ((pre_byte << 16) + instruction) {
                 // NOP
@@ -75,9 +138,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_shortmem): {
-                    Address target = 0;
-                    target.l = mem.get(PC+1);
-                    A = mem.get(target);
+                    A = mem.get(get_at_shortmem(PC+1));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -85,10 +146,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_longmem): {
-                    Address target = 0;
-                    target.h = mem.get(PC+1);
-                    target.l = mem.get(PC+2);
-                    A = mem.get(target);
+                    A = mem.get(get_at_longmem(PC+1));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -161,9 +219,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_shortptr): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(shortptr);
-                    A = mem.get(target);
+                    A = mem.get(get_at_shortptr(PC+2));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -171,11 +227,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_longptr): {
-                    Word longptr;
-                    longptr.h = mem.get(PC+2);
-                    longptr.l = mem.get(PC+3);
-                    Word target = mem.getWord(longptr);
-                    A = mem.get(target);
+                    A = mem.get(get_at_longptr(PC+2));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -183,9 +235,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_shortptrX): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(shortptr);
-                    A = mem.get(X + target);
+                    A = mem.get(X + get_at_REGshortptr(PC+2, X));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -193,11 +243,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_longptrX): {
-                    Word longptr;
-                    longptr.h = mem.get(PC+2);
-                    longptr.l = mem.get(PC+3);
-                    Word target = mem.getWord(longptr);
-                    A = mem.get(X + target);
+                    A = mem.get(X + get_at_REGlongptr(PC+2, X));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -205,9 +251,7 @@ class stm8s105k4 {
                     break;
                 }
                 case(LD_A_shortptrY): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(shortptr);
-                    A = mem.get(Y + target);
+                    A = mem.get(Y + get_at_REGshortptr(PC+2, Y));
                     CC.C = bit_get(A, 7);
                     CC.Z = (A == 0);
 
@@ -441,60 +485,28 @@ class stm8s105k4 {
                 // ADD
                 case(ADD_IMMEDIATE): {
                     byte M = mem.get(PC+1);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 2;
                     break;
                 }
                 case(ADD_shortmem): {
-                    byte shortmem = mem.get(PC+1);
-                    byte M = mem.get(shortmem);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_shortmem(PC+1);
+                    ADD(M);
 
                     PC += 2;
                     break;
                 }
                 case(ADD_longmem): {
-                    Word longmem;
-                    longmem.h = mem.get(PC+1);
-                    longmem.l = mem.get(PC+2);
-                    byte M = mem.get(longmem);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_longmem(PC+1);
+                    ADD(M);
 
                     PC += 3;
                     break;
                 }
                 case(ADD_Xptr): {
                     byte M = mem.get(X);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 1;
                     break;
@@ -502,14 +514,7 @@ class stm8s105k4 {
                 case(ADD_shortoffX): {
                     byte shortoff = mem.get(PC+1);
                     byte M = mem.get(X + shortoff);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 2;
                     break;
@@ -519,28 +524,14 @@ class stm8s105k4 {
                     longoff.h = mem.get(PC+1);
                     longoff.l = mem.get(PC+2);
                     byte M = mem.get(X + longoff);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 3;
                     break;
                 }
                 case(ADD_Yptr): {
                     byte M = mem.get(Y);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 2;
                     break;
@@ -548,14 +539,7 @@ class stm8s105k4 {
                 case(ADD_shortoffY): {
                     byte shortoff = mem.get(PC+2);
                     byte M = mem.get(Y + shortoff);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 3;
                     break;
@@ -565,14 +549,7 @@ class stm8s105k4 {
                     longoff.h = mem.get(PC+2);
                     longoff.l = mem.get(PC+3);
                     byte M = mem.get(Y + longoff);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 4;
                     break;
@@ -580,126 +557,179 @@ class stm8s105k4 {
                 case(ADD_shortoffSPtr): {
                     byte shortoff = mem.get(PC+1);
                     byte M = mem.get(SP + shortoff);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    ADD(M);
 
                     PC += 2;
                     break;
                 }
                 case(ADD_shortptr): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(shortptr);
-                    byte M = mem.get(target);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_shortptr(PC+2);
+                    ADD(M);
 
                     PC += 3;
                     break;
                 }
                 case(ADD_longptr): {
-                    Word longptr;
-                    longptr.h = mem.get(PC+2);
-                    longptr.l = mem.get(PC+3);
-                    Word target = mem.getWord(longptr);
-                    byte M = mem.get(target);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_longptr(PC+2);
+                    ADD(M);
 
                     PC += 4;
                     break;
                 }
                 case(ADD_shortptrX): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(X + shortptr);
-                    byte M = mem.get(target);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_REGshortptr(PC+2, X);
+                    ADD(M);
 
                     PC += 3;
                     break;
                 }
                 case(ADD_longptrX): {
-                    Word longptr;
-                    longptr.h = mem.get(PC+2);
-                    longptr.l = mem.get(PC+3);
-                    Word target = mem.getWord(X + longptr);
-                    byte M = mem.get(target);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_REGlongptr(PC+2, X);
+                    ADD(M);
 
                     PC += 4;
                     break;
                 }
                 case(ADD_shortptrY): {
-                    byte shortptr = mem.get(PC+2);
-                    Word target = mem.getWord(Y + shortptr);
-                    byte M = mem.get(target);
-                    byte R = A + M; // result
-                    CC.V = check_V_add(A, M, R);
-                    CC.H = check_H_add(A, M, R);
-                    CC.N = bit_get(R, 7);
-                    CC.Z = (R == 0);
-                    CC.C = check_C_add(A, M, R);
-
-                    A = R;
+                    byte M = get_at_REGshortptr(PC+2, Y);
+                    ADD(M);
 
                     PC += 3;
                     break;
                 }
 
                 // SUB
-                case(SUB_IMMEDIATE): {}
-                case(SUB_shortmem): {}
-                case(SUB_longmem): {}
-                case(SUB_Xptr): {}
-                case(SUB_shortoffX): {}
-                case(SUB_longoffX): {}
-                case(SUB_Yptr): {}
-                case(SUB_shortoffY): {}
-                case(SUB_longoffY): {}
-                case(SUB_shortoffSPtr): {}
-                case(SUB_shortptr): {}
-                case(SUB_longptr): {}
-                case(SUB_shortptrX): {}
-                case(SUB_longptrX): {}
-                case(SUB_shortptrY): {}
-                case(SUB_SP_IMMEDIATE): {}
+                case(SUB_IMMEDIATE): {
+                    byte M = mem.get(PC+1);
+                    SUB(M);
+
+                    PC += 1;
+                    break;
+                }
+                case(SUB_shortmem): {
+                    byte M = get_at_shortmem(PC+1);
+                    SUB(M);
+
+                    PC += 1;
+                    break;
+                }
+                case(SUB_longmem): {
+                    byte M = get_at_longmem(PC+1);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_Xptr): {
+                    byte M = mem.get(X);
+                    SUB(M);
+
+                    PC += 1;
+                    break;
+                }
+                case(SUB_shortoffX): {
+                    byte shortoff = mem.get(PC+1);
+                    byte M = mem.get(X + shortoff);
+                    SUB(M);
+
+                    PC += 2;
+                    break;
+                }
+                case(SUB_longoffX): {
+                    Word longoff;
+                    longoff.h = mem.get(PC+1);
+                    longoff.l = mem.get(PC+2);
+                    byte M = mem.get(X + longoff);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_Yptr): {
+                    byte M = mem.get(Y);
+                    SUB(M);
+
+                    PC += 2;
+                    break;
+                }
+                case(SUB_shortoffY): {
+                    byte shortoff = mem.get(PC+2);
+                    byte M = mem.get(X + shortoff);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_longoffY): {
+                    Word longoff;
+                    longoff.h = mem.get(PC+2);
+                    longoff.l = mem.get(PC+3);
+                    byte M = mem.get(Y + longoff);
+                    SUB(M);
+
+                    PC += 4;
+                    break;
+                }
+                case(SUB_shortoffSPtr): {
+                    byte shortoff = mem.get(PC+1);
+                    byte M = mem.get(SP + shortoff);
+                    SUB(M);
+
+                    PC += 2;
+                    break;
+                }
+                case(SUB_shortptr): {
+                    byte M = get_at_shortptr(PC+2);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_longptr): {
+                    byte M = get_at_longptr(PC+2);
+                    SUB(M);
+
+                    PC += 4;
+                    break;
+                }
+                case(SUB_shortptrX): {
+                    byte M = get_at_REGshortptr(PC+2, X);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_longptrX): {
+                    byte M = get_at_REGlongptr(PC+2, X);
+                    SUB(M);
+
+                    PC += 4;
+                    break;
+                }
+                case(SUB_shortptrY): {
+                    byte M = get_at_REGshortptr(PC+2, Y);
+                    SUB(M);
+
+                    PC += 3;
+                    break;
+                }
+                case(SUB_SP_IMMEDIATE): {
+                    // TODO update after word operators
+                    byte IMMEDIATE = mem.get(PC+1);
+                    SP = SP - IMMEDIATE;
+
+                    PC += 2;
+                    break;
+                }
 
                 // JRA
                 case(JRA): {
                     PC += mem.get(PC+1) + 2; // PC = PC + src + lgth
                     break;
                 }
+
+                // CP
+                
             } 
         }
 

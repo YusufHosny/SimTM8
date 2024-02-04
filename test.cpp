@@ -98,19 +98,19 @@ int main() {
     test(stm8.X == stm8.Y & stm8.X == 0);    
 
     test(stm8.PC == 0x008080);
-    stm8.next_cycle();
+    stm8.next();
     test(stm8.CC == 0x28);
     test(stm8.A == 0);
     test(stm8.SP = 0x3FF);
     test(stm8.X == stm8.Y & stm8.X == 0);    
     test(stm8.PC == 0x008081);
-    stm8.next_cycle();
+    stm8.next();
     test(stm8.CC == 0x28);
     test(stm8.A == 0);
     test(stm8.SP = 0x3FF);
     test(stm8.X == stm8.Y & stm8.X == 0);    
     test(stm8.PC == 0x008082);
-    stm8.next_cycle();
+    stm8.next();
     test(stm8.CC == 0x28);
     test(stm8.A == 0);
     test(stm8.SP = 0x3FF);

@@ -28,3 +28,15 @@ byte check_H_add(byte A, byte M, byte R) {
 byte check_C_add(byte A, byte M, byte R) {
     return ((bit_get(A, 7) & bit_get(M, 7) )| (bit_get(M, 7) & ~bit_get(R, 7)) | (~bit_get(R, 7) & bit_get(A, 7)));
 }
+
+byte check_V_sub(byte A, byte M, byte R) {
+    return 
+        ((bit_get(A, 7) & bit_get(M, 7) )| (bit_get(A, 7) & ~bit_get(R, 7)) | (bit_get(A, 7) & bit_get(M, 7) & bit_get(R, 7)))
+        ^ 
+        ((bit_get(A, 6) & bit_get(M, 6) )| (bit_get(A, 6) & ~bit_get(R, 6)) | (bit_get(A, 6) & bit_get(M, 6) & bit_get(R, 6)));
+}
+
+
+byte check_C_sub(byte A, byte M, byte R) {
+    return ((~bit_get(A, 7) & bit_get(M, 7) )| (~bit_get(A, 7) & ~bit_get(R, 7)) | (bit_get(A, 7) & bit_get(M, 7) & bit_get(R, 7)));
+}
